@@ -44,8 +44,30 @@ public class CommandeService {
         Producteur producteur = producteurRepository.findById(request.getProducteurId())
                 .orElseThrow(() -> new EntityNotFoundException("Producteur non trouvé"));
 
-        Adresse adresse = adresseRepository.findById(request.getAdresseId())
-                .orElseThrow(() -> new EntityNotFoundException("Adresse non trouvée"));
+        // Gérer l'adresse : soit existante, soit nouvelle
+        Adresse adresse;
+        if (request.getAdresseId() != null) {
+            adresse = adresseRepository.findById(request.getAdresseId())
+                    .orElseThrow(() -> new EntityNotFoundException("Adresse non trouvée"));
+        } else if (request.getNouvelleAdresse() != null) {
+            // Créer une nouvelle adresse pour ce client
+            var adresseReq = request.getNouvelleAdresse();
+            adresse = Adresse.builder()
+                    .client(client)
+                    .libelle(adresseReq.getLibelle() != null ? adresseReq.getLibelle() : "Adresse de livraison")
+                    .quartier(adresseReq.getQuartier())
+                    .ville(adresseReq.getVille())
+                    .rue(adresseReq.getRue())
+                    .description(adresseReq.getDescription())
+                    .latitude(adresseReq.getLatitude())
+                    .longitude(adresseReq.getLongitude())
+                    .principale(false)
+                    .build();
+            adresse = adresseRepository.save(adresse);
+            log.info("Nouvelle adresse créée pour le client {}: {}", clientId, adresse.getId());
+        } else {
+            throw new IllegalArgumentException("Une adresse de livraison est requise (adresseId ou nouvelleAdresse)");
+        }
 
         // Créer la commande
         Commande commande = Commande.builder()

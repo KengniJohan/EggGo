@@ -2,6 +2,8 @@ package com.egggo.domain.repository;
 
 import com.egggo.domain.model.user.Role;
 import com.egggo.domain.model.user.Utilisateur;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -49,4 +51,9 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, Long> 
            "LOWER(u.prenom) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
            "u.telephone LIKE CONCAT('%', :search, '%')")
     List<Utilisateur> rechercherParNomOuTelephone(@Param("search") String search);
+
+    /**
+     * Trouve les utilisateurs par rôle (paginé)
+     */
+    Page<Utilisateur> findByRole(Role role, Pageable pageable);
 }

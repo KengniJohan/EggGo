@@ -15,7 +15,7 @@ import java.util.Map;
  * Contrôleur pour les vérifications de santé de l'API
  */
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/v1")
 @Tag(name = "Health", description = "APIs pour la vérification de l'état de l'application")
 public class HealthController {
 

@@ -21,8 +21,11 @@ import java.util.List;
 @Builder
 public class CreateCommandeRequest {
 
-    @NotNull(message = "L'adresse de livraison est obligatoire")
+    // Soit adresseId pour une adresse existante, soit nouvelleAdresse pour en créer une
     private Long adresseId;
+    
+    @Valid
+    private AdresseRequest nouvelleAdresse;
 
     @NotNull(message = "Le producteur est obligatoire")
     private Long producteurId;
@@ -50,5 +53,21 @@ public class CreateCommandeRequest {
         @NotNull(message = "La quantité est obligatoire")
         @Positive(message = "La quantité doit être positive")
         private Integer quantite;
+    }
+    
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class AdresseRequest {
+        private String libelle;
+        private String rue;
+        @NotNull(message = "Le quartier est obligatoire")
+        private String quartier;
+        @NotNull(message = "La ville est obligatoire")
+        private String ville;
+        private String description;
+        private Double latitude;
+        private Double longitude;
     }
 }

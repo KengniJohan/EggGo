@@ -44,6 +44,12 @@ public class Livraison {
     @Column
     private Double distanceKm;
 
+    @Column
+    private Integer tempsEstime; // Temps estimé en minutes
+
+    @Column(length = 500)
+    private String photoPreuve; // URL de la photo preuve de livraison
+
     @Column(columnDefinition = "TEXT")
     private String notes;
 

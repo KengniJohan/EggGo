@@ -70,4 +70,24 @@ public interface CommandeRepository extends JpaRepository<Commande, Long> {
      * Trouve les commandes non payées
      */
     List<Commande> findByPayeFalseAndStatutNot(StatutCommande statut);
+
+    /**
+     * Trouve les commandes d'un producteur avec un statut spécifique (paginé)
+     */
+    Page<Commande> findByProducteurIdAndStatutOrderByDateCommandeDesc(Long producteurId, StatutCommande statut, Pageable pageable);
+
+    /**
+     * Trouve les commandes après une date
+     */
+    List<Commande> findByDateCommandeAfter(LocalDateTime date);
+
+    /**
+     * Compte les commandes après une date
+     */
+    long countByDateCommandeAfter(LocalDateTime date);
+
+    /**
+     * Trouve les commandes d'un producteur après une date
+     */
+    List<Commande> findByProducteurIdAndDateCommandeAfter(Long producteurId, LocalDateTime date);
 }

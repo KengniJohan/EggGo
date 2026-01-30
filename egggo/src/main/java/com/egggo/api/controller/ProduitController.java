@@ -19,7 +19,7 @@ import java.util.List;
  * Contrôleur pour les produits
  */
 @RestController
-@RequestMapping("/api/v1/produits")
+@RequestMapping("/v1/produits")
 @RequiredArgsConstructor
 @Tag(name = "Produits", description = "APIs pour la gestion des produits")
 public class ProduitController {

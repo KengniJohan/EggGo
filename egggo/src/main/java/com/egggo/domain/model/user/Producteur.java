@@ -66,6 +66,13 @@ public class Producteur extends Utilisateur {
     private List<Commande> commandes = new ArrayList<>();
 
     /**
+     * Livreurs rattachés à ce producteur (livreurs propres)
+     */
+    @OneToMany(mappedBy = "producteurRattache", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<Livreur> livreursRattaches = new ArrayList<>();
+
+    /**
      * Ajoute un produit à la liste du producteur
      */
     public void ajouterProduit(Produit produit) {

@@ -5,6 +5,8 @@ import com.egggo.api.dto.common.PageResponse;
 import com.egggo.api.dto.order.CommandeDto;
 import com.egggo.api.dto.order.CreateCommandeRequest;
 import com.egggo.application.service.CommandeService;
+import com.egggo.domain.model.user.Utilisateur;
+import com.egggo.domain.repository.UtilisateurRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -14,48 +16,63 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 /**
  * Contrôleur pour les commandes
+ * Utilise le contexte de sécurité pour identifier l'utilisateur connecté
  */
 @RestController
-@RequestMapping("/api/v1/commandes")
+@RequestMapping("/v1/commandes")
 @RequiredArgsConstructor
 @Tag(name = "Commandes", description = "APIs pour la gestion des commandes")
 public class CommandeController {
 
     private final CommandeService commandeService;
+    private final UtilisateurRepository utilisateurRepository;
+
+    /**
+     * Récupère l'ID de l'utilisateur connecté depuis le contexte de sécurité
+     */
+    private Long getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String telephone = authentication.getName();
+        Utilisateur utilisateur = utilisateurRepository.findByTelephone(telephone)
+                .orElseThrow(() -> new IllegalStateException("Utilisateur non trouvé"));
+        return utilisateur.getId();
+    }
 
     @PostMapping
     @PreAuthorize("hasRole('CLIENT')")
-    @Operation(summary = "Créer une commande", description = "Crée une nouvelle commande (réservé aux clients)")
+    @Operation(summary = "Créer une commande", description = "Crée une nouvelle commande pour le client connecté")
     public ResponseEntity<ApiResponse<CommandeDto>> createCommande(
-            @RequestHeader("X-Client-Id") Long clientId,
             @Valid @RequestBody CreateCommandeRequest request) {
+        Long clientId = getCurrentUserId();
         CommandeDto commande = commandeService.createCommande(clientId, request);
         return ResponseEntity.ok(ApiResponse.success("Commande créée avec succès", commande));
     }
 
-    @GetMapping("/client")
+    @GetMapping("/mes-commandes")
     @PreAuthorize("hasRole('CLIENT')")
     @Operation(summary = "Mes commandes", description = "Récupère les commandes du client connecté")
-    public ResponseEntity<ApiResponse<PageResponse<CommandeDto>>> getCommandesClient(
-            @RequestHeader("X-Client-Id") Long clientId,
+    public ResponseEntity<ApiResponse<PageResponse<CommandeDto>>> getMesCommandes(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
+        Long clientId = getCurrentUserId();
         Pageable pageable = PageRequest.of(page, size);
         Page<CommandeDto> commandes = commandeService.getCommandesClient(clientId, pageable);
         return ResponseEntity.ok(ApiResponse.success(PageResponse.from(commandes)));
     }
 
-    @GetMapping("/producteur")
+    @GetMapping("/recues")
     @PreAuthorize("hasRole('PRODUCTEUR')")
-    @Operation(summary = "Commandes reçues", description = "Récupère les commandes reçues par le producteur")
-    public ResponseEntity<ApiResponse<PageResponse<CommandeDto>>> getCommandesProducteur(
-            @RequestHeader("X-Producteur-Id") Long producteurId,
+    @Operation(summary = "Commandes reçues", description = "Récupère les commandes reçues par le producteur connecté")
+    public ResponseEntity<ApiResponse<PageResponse<CommandeDto>>> getCommandesRecues(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
+        Long producteurId = getCurrentUserId();
         Pageable pageable = PageRequest.of(page, size);
         Page<CommandeDto> commandes = commandeService.getCommandesProducteur(producteurId, pageable);
         return ResponseEntity.ok(ApiResponse.success(PageResponse.from(commandes)));

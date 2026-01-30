@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
  * Contrôleur pour l'authentification
  */
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/v1/auth")
 @RequiredArgsConstructor
 @Tag(name = "Authentification", description = "APIs pour la connexion et l'inscription")
 public class AuthController {

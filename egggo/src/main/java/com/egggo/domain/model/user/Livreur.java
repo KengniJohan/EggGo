@@ -53,6 +53,26 @@ public class Livreur extends Utilisateur {
     @Column(nullable = false)
     private Boolean valide = false; // Validé par l'admin
 
+    /**
+     * Producteur auquel le livreur est rattaché (null = livreur indépendant)
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "producteur_id")
+    private Producteur producteurRattache;
+
+    /**
+     * Indique si le livreur est indépendant ou rattaché à un producteur
+     */
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean independant = true;
+
+    /**
+     * Zone de couverture du livreur (ex: "Douala", "Yaoundé")
+     */
+    @Column(length = 100)
+    private String zoneCouverture;
+
     @OneToMany(mappedBy = "livreur", cascade = CascadeType.ALL)
     @Builder.Default
     private List<Livraison> livraisons = new ArrayList<>();

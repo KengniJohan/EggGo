@@ -42,6 +42,16 @@ public class ProduitService {
     }
 
     /**
+     * Récupère une catégorie par son ID
+     */
+    @Transactional(readOnly = true)
+    public CategorieDto getCategorieById(Long id) {
+        Categorie categorie = categorieRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Catégorie non trouvée avec l'ID: " + id));
+        return toCategorieDto(categorie);
+    }
+
+    /**
      * Récupère les produits par catégorie
      */
     @Transactional(readOnly = true)

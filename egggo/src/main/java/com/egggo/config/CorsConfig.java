@@ -22,12 +22,17 @@ public class CorsConfig {
         
         // Origines autorisées
         configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000",      // Web dev
-                "http://localhost:8080",      // API dev
-                "https://egggo.cm",           // Production
-                "https://www.egggo.cm",       // Production www
-                "https://admin.egggo.cm"      // Admin panel
+                "http://localhost:3000",       // Web dev
+                "http://localhost:8080",       // API dev
+                "http://192.168.1.167:8080",   // WiFi local (mobile)
+                "http://10.0.2.2:8080",        // Émulateur Android
+                "https://egggo.cm",            // Production
+                "https://www.egggo.cm",        // Production www
+                "https://admin.egggo.cm"       // Admin panel
         ));
+        
+        // Permettre toutes les origines en développement (optionnel)
+        // configuration.setAllowedOriginPatterns(List.of("*"));
         
         // Méthodes HTTP autorisées
         configuration.setAllowedMethods(Arrays.asList(

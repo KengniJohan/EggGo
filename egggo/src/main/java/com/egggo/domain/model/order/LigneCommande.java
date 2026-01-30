@@ -37,6 +37,16 @@ public class LigneCommande {
     private Double prixTotal;
 
     /**
+     * Retourne le prix total de la ligne (calcul à la volée si non défini)
+     */
+    public Double getPrixTotal() {
+        if (prixTotal == null && prixUnitaire != null && quantite != null) {
+            prixTotal = prixUnitaire * quantite;
+        }
+        return prixTotal != null ? prixTotal : 0.0;
+    }
+
+    /**
      * Calcule le prix total de la ligne
      */
     @PrePersist

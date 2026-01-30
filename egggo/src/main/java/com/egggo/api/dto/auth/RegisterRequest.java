@@ -35,8 +35,9 @@ public class RegisterRequest {
     @Size(min = 6, message = "Le mot de passe doit contenir au moins 6 caractères")
     private String motDePasse;
 
-    @NotNull(message = "Le rôle est obligatoire")
-    private Role role;
+    // Rôle optionnel - CLIENT par défaut pour l'app mobile
+    @Builder.Default
+    private Role role = Role.CLIENT;
 
     // Champs spécifiques au producteur
     private String nomFerme;
