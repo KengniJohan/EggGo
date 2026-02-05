@@ -33,6 +33,16 @@ class _OrdersScreenState extends State<OrdersScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mes commandes'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/main');
+            }
+          },
+        ),
       ),
       body: Consumer<CommandeProvider>(
         builder: (context, provider, child) {
@@ -270,6 +280,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
           label: 'En préparation',
           color: Colors.purple,
           icon: Icons.inventory,
+        );
+      case StatutCommande.prete:
+        return StatusInfo(
+          label: 'Prête',
+          color: Colors.teal,
+          icon: Icons.check_box,
         );
       case StatutCommande.enLivraison:
         return StatusInfo(

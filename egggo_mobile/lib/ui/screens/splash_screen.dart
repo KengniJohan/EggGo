@@ -48,21 +48,17 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted) return;
     
     try {
-      // Initialiser l'authentification avec timeout
+      // Initialiser l'authentification (restaure token + user cache)
       final authProvider = context.read<AuthProvider>();
-      await authProvider.initialize().timeout(
-        const Duration(seconds: 5),
-        onTimeout: () {
-          // Si timeout, considérer comme non authentifié
-          debugPrint('Auth initialization timeout');
-        },
-      );
+      await authProvider.initialize();
       
       if (!mounted) return;
       
       // Navigation basée sur l'état et le rôle
       if (authProvider.isAuthenticated) {
-        final role = authProvider.user?.role?.toUpperCase();
+        final role = (authProvider.user?.role ?? '')
+            .toUpperCase()
+            .replaceFirst(RegExp(r'^ROLE_'), '');
         switch (role) {
           case 'ADMIN':
             context.go(AppRoutes.adminDashboard);

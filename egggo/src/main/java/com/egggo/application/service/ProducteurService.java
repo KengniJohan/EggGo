@@ -13,6 +13,8 @@ import com.egggo.domain.model.product.Produit;
 import com.egggo.domain.model.user.Livreur;
 import com.egggo.domain.model.user.Producteur;
 import com.egggo.domain.repository.*;
+import com.egggo.domain.model.delivery.Livraison;
+import com.egggo.domain.model.delivery.StatutLivraison;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +41,7 @@ public class ProducteurService {
     private final CommandeRepository commandeRepository;
     private final LivreurRepository livreurRepository;
     private final CategorieRepository categorieRepository;
+    private final LivraisonRepository livraisonRepository;
 
     /**
      * Récupère le tableau de bord d'un producteur
@@ -342,7 +345,7 @@ public class ProducteurService {
     }
 
     /**
-     * Assigne un livreur à une commande
+     * Assigne un livreur à une commande et crée la livraison correspondante
      */
     @Transactional
     public CommandeDto assignerLivreur(Long producteurId, Long commandeId, Long livreurId) {
@@ -356,11 +359,53 @@ public class ProducteurService {
         Livreur livreur = livreurRepository.findById(livreurId)
                 .orElseThrow(() -> new EntityNotFoundException("Livreur non trouvé"));
 
-        // La création de la livraison sera gérée par LivraisonService
+        // Vérifier si une livraison existe déjà
+        if (livraisonRepository.findByCommandeId(commandeId).isEmpty()) {
+            // Créer la livraison pour le livreur
+            Livraison livraison = Livraison.builder()
+                    .commande(commande)
+                    .livreur(livreur)
+                    .statut(StatutLivraison.ASSIGNEE)
+                    .dateAssignation(java.time.LocalDateTime.now())
+                    .distanceKm(5.0) // Distance par défaut
+                    .tempsEstime(30) // 30 minutes par défaut
+                    .build();
+            livraisonRepository.save(livraison);
+            log.info("Livraison créée pour commande {} avec livreur {}", commandeId, livreurId);
+        }
+
         commande.mettreAJourStatut(StatutCommande.EN_PREPARATION);
         commande = commandeRepository.save(commande);
 
         log.info("Livreur {} assigné à la commande {}", livreurId, commandeId);
+
+        return toCommandeDto(commande);
+    }
+
+    /**
+     * Marque une commande comme prête (le livreur peut maintenant la récupérer)
+     */
+    @Transactional
+    public CommandeDto marquerPrete(Long producteurId, Long commandeId) {
+        Commande commande = commandeRepository.findById(commandeId)
+                .orElseThrow(() -> new EntityNotFoundException("Commande non trouvée"));
+
+        if (!commande.getProducteur().getId().equals(producteurId)) {
+            throw new IllegalArgumentException("Cette commande n'appartient pas à ce producteur");
+        }
+
+        if (commande.getStatut() != StatutCommande.EN_PREPARATION) {
+            throw new IllegalStateException("La commande doit être en préparation pour être marquée comme prête");
+        }
+
+        // Vérifier qu'une livraison existe (donc un livreur a été assigné)
+        Livraison livraison = livraisonRepository.findByCommandeId(commandeId)
+                .orElseThrow(() -> new IllegalStateException("Un livreur doit être assigné avant de marquer la commande comme prête"));
+
+        commande.mettreAJourStatut(StatutCommande.PRETE);
+        commande = commandeRepository.save(commande);
+
+        log.info("Commande {} marquée comme prête", commandeId);
 
         return toCommandeDto(commande);
     }

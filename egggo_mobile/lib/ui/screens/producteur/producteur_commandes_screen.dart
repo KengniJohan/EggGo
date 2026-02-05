@@ -20,6 +20,8 @@ class _ProducteurCommandesScreenState extends State<ProducteurCommandesScreen>
   final List<StatutCommande> _statuts = [
     StatutCommande.enAttente,
     StatutCommande.confirmee,
+    StatutCommande.enPreparation,
+    StatutCommande.prete,
     StatutCommande.enLivraison,
     StatutCommande.livree,
     StatutCommande.annulee,
@@ -69,7 +71,7 @@ class _ProducteurCommandesScreenState extends State<ProducteurCommandesScreen>
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,
-          labelColor: AppTheme.primaryColor,
+          labelColor: Colors.white,
           unselectedLabelColor: Colors.grey,
           indicatorColor: AppTheme.primaryColor,
           tabs: _statuts.map((s) => Tab(text: s.libelle)).toList(),
@@ -321,6 +323,33 @@ class _CommandeCard extends StatelessWidget {
             backgroundColor: Colors.blue,
           ),
         );
+      case StatutCommande.enPreparation:
+        return ElevatedButton.icon(
+          onPressed: () => _marquerPrete(context),
+          icon: const Icon(Icons.check_box, size: 18),
+          label: const Text('Marquer prête'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.orange,
+          ),
+        );
+      case StatutCommande.prete:
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.green.withAlpha(25),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.hourglass_bottom, color: Colors.green, size: 18),
+              SizedBox(width: 6),
+              Text(
+                'En attente livreur',
+                style: TextStyle(color: Colors.green, fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+        );
       case StatutCommande.enLivraison:
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -343,8 +372,6 @@ class _CommandeCard extends StatelessWidget {
         return const Icon(Icons.check_circle, color: Colors.green, size: 28);
       case StatutCommande.annulee:
         return const Icon(Icons.cancel, color: Colors.red, size: 28);
-      default:
-        return const SizedBox();
     }
   }
 
@@ -360,6 +387,28 @@ class _CommandeCard extends StatelessWidget {
         ),
       );
       onRefresh();
+    }
+  }
+
+  void _marquerPrete(BuildContext context) async {
+    final provider = context.read<ProducteurProvider>();
+    final success = await provider.marquerPrete(commande.id);
+    
+    if (success && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Commande prête ! Le livreur peut maintenant la récupérer.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      onRefresh();
+    } else if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur: ${provider.errorMessage ?? "Impossible de marquer la commande comme prête"}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -538,6 +587,9 @@ class _StatusBadge extends StatelessWidget {
         break;
       case StatutCommande.enPreparation:
         color = Colors.purple;
+        break;
+      case StatutCommande.prete:
+        color = Colors.teal;
         break;
       case StatutCommande.enLivraison:
         color = Colors.indigo;

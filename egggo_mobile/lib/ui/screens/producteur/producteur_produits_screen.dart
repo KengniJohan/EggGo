@@ -99,13 +99,11 @@ class _ProducteurProduitsScreenState extends State<ProducteurProduitsScreen> {
   }
 
   void _showAddProductDialog() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Fonctionnalité en cours de développement'),
+        backgroundColor: Colors.orange,
       ),
-      builder: (context) => const _AddProductSheet(),
     );
   }
 }
@@ -327,13 +325,11 @@ class _ProduitCard extends StatelessWidget {
   }
 
   void _showEditDialog(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Fonctionnalité en cours de développement'),
+        backgroundColor: Colors.orange,
       ),
-      builder: (ctx) => _AddProductSheet(produit: produit),
     );
   }
 
@@ -478,33 +474,10 @@ class _ProduitCard extends StatelessWidget {
   }
 
   void _showDeleteConfirmation(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Supprimer le produit'),
-        content: Text('Voulez-vous vraiment supprimer "${produit.nom}" ?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Annuler'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final success = await context.read<ProducteurProvider>().deleteProduit(produit.id);
-              if (ctx.mounted) Navigator.pop(ctx);
-              if (success && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Produit supprimé'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Supprimer'),
-          ),
-        ],
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Fonctionnalité en cours de développement'),
+        backgroundColor: Colors.orange,
       ),
     );
   }

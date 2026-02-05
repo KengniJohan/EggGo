@@ -144,6 +144,14 @@ public class ProducteurController {
         return ResponseEntity.ok(ApiResponse.success("Commande annulée", commande));
     }
 
+    @PatchMapping("/commandes/{id}/prete")
+    @Operation(summary = "Marquer commande prête", description = "Marque la commande comme prête à être récupérée par le livreur")
+    public ResponseEntity<ApiResponse<CommandeDto>> marquerPrete(@PathVariable Long id) {
+        Long producteurId = getCurrentUserId();
+        CommandeDto commande = producteurService.marquerPrete(producteurId, id);
+        return ResponseEntity.ok(ApiResponse.success("Commande prête", commande));
+    }
+
     // ==================== GESTION DES LIVREURS ====================
 
     @GetMapping("/livreurs")

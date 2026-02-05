@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../data/providers/auth_provider.dart';
 import '../../../data/providers/admin_provider.dart';
 import '../../../data/models/admin_dashboard.dart';
+import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 
 /// Dashboard de l'administrateur
@@ -1160,6 +1162,8 @@ class _ProfilTab extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: () async {
                   await authProvider.logout();
+                    if (!context.mounted) return;
+                    context.go(AppRoutes.login);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red[50],

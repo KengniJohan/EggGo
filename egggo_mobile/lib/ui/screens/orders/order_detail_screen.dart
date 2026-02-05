@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_theme.dart';
@@ -32,6 +33,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Détail commande'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/orders');
+            }
+          },
+        ),
       ),
       body: Consumer<CommandeProvider>(
         builder: (context, provider, child) {
@@ -377,6 +388,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         return Icons.check;
       case StatutCommande.enPreparation:
         return Icons.inventory;
+      case StatutCommande.prete:
+        return Icons.check_box;
       case StatutCommande.enLivraison:
         return Icons.local_shipping;
       case StatutCommande.livree:
@@ -394,6 +407,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         return 'Confirmée';
       case StatutCommande.enPreparation:
         return 'Préparation';
+      case StatutCommande.prete:
+        return 'Prête';
       case StatutCommande.enLivraison:
         return 'Livraison';
       case StatutCommande.livree:

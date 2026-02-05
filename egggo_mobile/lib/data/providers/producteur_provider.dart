@@ -219,6 +219,24 @@ class ProducteurProvider extends ChangeNotifier {
     }
   }
 
+  /// Marque une commande comme prête
+  Future<bool> marquerPrete(int commandeId) async {
+    try {
+      final updatedCommande = await _producteurService.marquerPrete(commandeId);
+      
+      final index = _commandes.indexWhere((c) => c.id == commandeId);
+      if (index != -1) {
+        _commandes[index] = updatedCommande;
+        notifyListeners();
+      }
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Récupère les livreurs disponibles
   Future<List<Map<String, dynamic>>> getLivreursDisponibles() async {
     try {

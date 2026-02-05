@@ -46,7 +46,8 @@ class AppRoutes {
 class AppRouter {
   /// Retourne la route du dashboard selon le rôle de l'utilisateur
   static String _getDashboardForRole(String? role) {
-    switch (role?.toUpperCase()) {
+    final normalizedRole = (role ?? '').toUpperCase().replaceFirst(RegExp(r'^ROLE_'), '');
+    switch (normalizedRole) {
       case 'ADMIN':
         return AppRoutes.adminDashboard;
       case 'PRODUCTEUR':
@@ -62,8 +63,9 @@ class AppRouter {
   static GoRouter router(AuthProvider authProvider) {
     return GoRouter(
       initialLocation: AppRoutes.splash,
-      // Ne pas utiliser refreshListenable pour éviter les redirections en boucle
-      // La navigation est gérée manuellement dans le splash screen
+      // Réagir aux changements d'état d'auth (login/logout) pour garantir
+      // les redirections vers /login quand l'utilisateur se déconnecte.
+      refreshListenable: authProvider,
       redirect: (context, state) {
         final isAuth = authProvider.isAuthenticated;
         final status = authProvider.status;

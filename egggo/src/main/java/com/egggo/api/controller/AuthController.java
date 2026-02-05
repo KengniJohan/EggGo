@@ -5,11 +5,15 @@ import com.egggo.api.dto.auth.LoginRequest;
 import com.egggo.api.dto.auth.RegisterRequest;
 import com.egggo.api.dto.common.ApiResponse;
 import com.egggo.application.service.AuthService;
+import com.egggo.domain.model.user.Utilisateur;
+import com.egggo.domain.repository.UtilisateurRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -22,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final UtilisateurRepository utilisateurRepository;
 
     @PostMapping("/login")
     @Operation(summary = "Connexion", description = "Authentifie un utilisateur et retourne un token JWT")
@@ -39,8 +44,23 @@ public class AuthController {
 
     @GetMapping("/me")
     @Operation(summary = "Profil utilisateur", description = "Récupère les informations de l'utilisateur connecté")
-    public ResponseEntity<ApiResponse<String>> me() {
-        // Cette méthode sera implémentée avec la récupération du contexte de sécurité
-        return ResponseEntity.ok(ApiResponse.success("Utilisateur connecté"));
+    public ResponseEntity<ApiResponse<AuthResponse.UserInfo>> me() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String telephone = authentication.getName();
+        
+        Utilisateur utilisateur = utilisateurRepository.findByTelephone(telephone)
+                .orElseThrow(() -> new IllegalStateException("Utilisateur non trouvé"));
+        
+        AuthResponse.UserInfo userInfo = AuthResponse.UserInfo.builder()
+                .id(utilisateur.getId())
+                .nom(utilisateur.getNom())
+                .prenom(utilisateur.getPrenom())
+                .telephone(utilisateur.getTelephone())
+                .email(utilisateur.getEmail())
+                .photoProfil(utilisateur.getPhotoProfil())
+                .role(utilisateur.getRole())
+                .build();
+        
+        return ResponseEntity.ok(ApiResponse.success(userInfo));
     }
 }

@@ -3,6 +3,7 @@ enum StatutCommande {
   enAttente('EN_ATTENTE', 'En attente'),
   confirmee('CONFIRMEE', 'Confirmée'),
   enPreparation('EN_PREPARATION', 'En préparation'),
+  prete('PRETE', 'Prête'),
   enLivraison('EN_LIVRAISON', 'En livraison'),
   livree('LIVREE', 'Livrée'),
   annulee('ANNULEE', 'Annulée');

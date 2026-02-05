@@ -10,6 +10,24 @@ class ProducteurService {
 
   ProducteurService(this._apiService);
 
+  String _mapUniteToApi(String? unite) {
+    final value = (unite ?? '').trim().toLowerCase();
+    switch (value) {
+      case 'pièce':
+      case 'piece':
+        return 'PIECE';
+      case 'plateau':
+      case 'alvéole':
+      case 'alveole':
+        return 'PLATEAU_30';
+      case 'carton':
+        return 'CARTON_180';
+      default:
+        // Valeur déjà au format API ?
+        return unite ?? 'PLATEAU_30';
+    }
+  }
+
   /// Récupère le dashboard producteur
   Future<ProducteurDashboard> getDashboard() async {
     try {
@@ -46,11 +64,11 @@ class ProducteurService {
       body: {
         'nom': nom,
         'description': description,
-        'prix': prix,
-        'quantiteStock': quantiteStock,
+        'prixUnitaire': prix,
+        'stockDisponible': quantiteStock,
         'categorieId': categorieId,
         'imageUrl': imageUrl,
-        'unite': unite,
+        'unite': _mapUniteToApi(unite),
       },
     );
     return Produit.fromJson(response['data'] ?? response);
@@ -69,11 +87,11 @@ class ProducteurService {
     final body = <String, dynamic>{};
     if (nom != null) body['nom'] = nom;
     if (description != null) body['description'] = description;
-    if (prix != null) body['prix'] = prix;
-    if (quantiteStock != null) body['quantiteStock'] = quantiteStock;
+    if (prix != null) body['prixUnitaire'] = prix;
+    if (quantiteStock != null) body['stockDisponible'] = quantiteStock;
     if (categorieId != null) body['categorieId'] = categorieId;
     if (imageUrl != null) body['imageUrl'] = imageUrl;
-    if (unite != null) body['unite'] = unite;
+    if (unite != null) body['unite'] = _mapUniteToApi(unite);
 
     final response = await _apiService.put(
       '${ApiConstants.producteurProduits}/$id',
@@ -132,16 +150,24 @@ class ProducteurService {
   /// Annule une commande
   Future<Commande> annulerCommande(int commandeId, String motif) async {
     final response = await _apiService.patch(
-      '${ApiConstants.producteurCommandes}/$commandeId/annuler',
-      body: {'motif': motif},
+      '${ApiConstants.producteurCommandes}/$commandeId/annuler?raison=${Uri.encodeComponent(motif)}',
     );
     return Commande.fromJson(response['data'] ?? response);
   }
 
   /// Assigne un livreur à une commande
   Future<Commande> assignerLivreur(int commandeId, int livreurId) async {
+    final response = await _apiService.post(
+      '${ApiConstants.producteurCommandes}/$commandeId/assigner-livreur/$livreurId',
+      body: {},
+    );
+    return Commande.fromJson(response['data'] ?? response);
+  }
+
+  /// Marque une commande comme prête (le livreur peut venir la récupérer)
+  Future<Commande> marquerPrete(int commandeId) async {
     final response = await _apiService.patch(
-      '${ApiConstants.producteurCommandes}/$commandeId/assigner-livreur?livreurId=$livreurId',
+      '${ApiConstants.producteurCommandes}/$commandeId/prete',
     );
     return Commande.fromJson(response['data'] ?? response);
   }

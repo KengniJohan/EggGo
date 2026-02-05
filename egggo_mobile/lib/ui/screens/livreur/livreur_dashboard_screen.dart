@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../data/providers/auth_provider.dart';
 import '../../../data/providers/livreur_provider.dart';
 import '../../../data/models/livreur_dashboard.dart';
+import '../../../core/router/app_router.dart';
 import '../../../core/theme/app_theme.dart';
 
 /// Dashboard du livreur avec fonctionnalités complètes
@@ -1047,6 +1049,8 @@ class _ProfilTab extends StatelessWidget {
                   );
                   if (confirmed == true) {
                     await authProvider.logout();
+                    if (!context.mounted) return;
+                    context.go(AppRoutes.login);
                   }
                 },
                 style: ElevatedButton.styleFrom(

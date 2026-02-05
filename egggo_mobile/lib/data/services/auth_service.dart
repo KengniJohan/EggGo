@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import '../../core/constants/api_constants.dart';
 import '../../core/constants/app_constants.dart';
 import '../models/user.dart';
@@ -24,6 +25,7 @@ class AuthService {
     
     // Sauvegarder le token
     await _saveToken(authResponse.token);
+    await _saveUser(authResponse.user);
     _apiService.setAuthToken(authResponse.token);
 
     return authResponse;
@@ -75,6 +77,7 @@ class AuthService {
     
     // Sauvegarder le token
     await _saveToken(authResponse.token);
+    await _saveUser(authResponse.user);
     _apiService.setAuthToken(authResponse.token);
 
     return authResponse;
@@ -83,13 +86,34 @@ class AuthService {
   /// Récupère le profil de l'utilisateur connecté
   Future<User> getProfile() async {
     final response = await _apiService.get(ApiConstants.profile);
-    return User.fromJson(response['data'] ?? response);
+    final user = User.fromJson(response['data'] ?? response);
+    await _saveUser(user);
+    return user;
   }
 
   /// Déconnexion
   Future<void> logout() async {
     await _removeToken();
+    await _removeUser();
     _apiService.setAuthToken(null);
+  }
+
+  Future<User?> getCachedUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(AppConstants.userKey);
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      final json = jsonDecode(raw);
+      if (json is Map<String, dynamic>) {
+        return User.fromJson(json);
+      }
+      if (json is Map) {
+        return User.fromJson(Map<String, dynamic>.from(json));
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Vérifie si l'utilisateur est connecté
@@ -110,10 +134,20 @@ class AuthService {
     await prefs.setString(AppConstants.tokenKey, token);
   }
 
+  Future<void> _saveUser(User user) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(AppConstants.userKey, jsonEncode(user.toJson()));
+  }
+
   /// Supprime le token
   Future<void> _removeToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(AppConstants.tokenKey);
+  }
+
+  Future<void> _removeUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(AppConstants.userKey);
   }
 
   /// Initialise le service avec le token stocké

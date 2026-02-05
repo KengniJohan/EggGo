@@ -38,18 +38,41 @@ class AuthProvider extends ChangeNotifier {
     try {
       await _authService.initialize();
       final isAuth = await _authService.isAuthenticated();
-      
-      if (isAuth) {
-        try {
-          _user = await _authService.getProfile();
-          _status = AuthStatus.authenticated;
-        } catch (e) {
-          // Token invalide ou API inaccessible, déconnecter
-          await _authService.logout();
-          _status = AuthStatus.unauthenticated;
-        }
-      } else {
+
+      if (!isAuth) {
+        _user = null;
         _status = AuthStatus.unauthenticated;
+        notifyListeners();
+        return;
+      }
+
+      // On a un token: restaurer d'abord l'utilisateur depuis le cache local.
+      // IMPORTANT: si on n'a pas d'utilisateur en cache, on doit récupérer /me
+      // avant de considérer la session comme authentifiée (sinon rôle = null => /main).
+      _user = await _authService.getCachedUser();
+
+      if (_user == null) {
+        try {
+          _user = await _authService.getProfile().timeout(const Duration(seconds: 5));
+        } catch (_) {
+          // Token invalide/expiré ou API inaccessible: forcer une vraie déconnexion.
+          await _authService.logout();
+          _user = null;
+          _status = AuthStatus.unauthenticated;
+          notifyListeners();
+          return;
+        }
+      }
+
+      _status = AuthStatus.authenticated;
+      notifyListeners();
+
+      // Ensuite, tenter de rafraîchir le profil depuis l'API (best-effort)
+      // pour mettre à jour les infos (sans casser la session en cas d'erreur réseau).
+      try {
+        _user = await _authService.getProfile();
+      } catch (_) {
+        // Garder l'utilisateur en cache.
       }
     } catch (e) {
       _status = AuthStatus.unauthenticated;
